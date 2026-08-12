@@ -284,6 +284,52 @@
           closeSheet(); closeDrawer(); go(App.route.section, App.route.sub);
           updateLiveBadge(); toast("本地缓存已清空，已恢复示例数据");
         }); break;
+
+      /* 云同步（Supabase） */
+      case "open-sync": openSyncSheet(); break;
+      case "sync-save-config": {
+        const url = (App.sheet.querySelector("#syncUrl") || {}).value || "";
+        const key = (App.sheet.querySelector("#syncKey") || {}).value || "";
+        if (!url.trim() || !key.trim()) { toast("请填写 URL 与 anon key"); break; }
+        (async () => { try { await Sync.configure(url, key); openSyncSheet(); }
+          catch (e) { toast("连接失败：" + (e.message || e)); } })();
+        break;
+      }
+      case "sync-signin": case "sync-signup": {
+        const email = (App.sheet.querySelector("#syncEmail") || {}).value || "";
+        const pass = (App.sheet.querySelector("#syncPass") || {}).value || "";
+        if (!email.trim() || !pass.trim()) { toast("请填写邮箱与密码"); break; }
+        (async () => {
+          try {
+            if (action === "sync-signup") await Sync.signUp(email, pass);
+            else await Sync.signIn(email, pass);
+            Sync.setAuto(true);
+            await firstSyncAfterLogin();
+            openSyncSheet();
+          } catch (e) { toast("操作失败：" + (e.message || e)); }
+        })();
+        break;
+      }
+      case "sync-signout":
+        (async () => { try { await Sync.signOut(); openSyncSheet(); } catch (e) { toast("退出失败：" + (e.message || e)); } })();
+        break;
+      case "sync-clear-config": Sync.clearConfig(); openSyncSheet(); break;
+      case "sync-pull":
+        (async () => {
+          try {
+            const r = await Sync.pull();
+            if (r && r.payload) { applyRemote(r.payload); toast("已拉取云端数据"); }
+            else toast("云端暂无数据，可先「推送本机」");
+            openSyncSheet();
+          } catch (e) { toast("拉取失败：" + (e.message || e)); }
+        })();
+        break;
+      case "sync-push":
+        (async () => {
+          try { await Sync.push({ life: App.state.life, fire: App.state.fire }); Sync.touch(); openSyncSheet(); toast("已推送到云端"); }
+          catch (e) { toast("推送失败：" + (e.message || e)); }
+        })();
+        break;
     }
   }
 
@@ -618,6 +664,72 @@
     });
   }
 
+  /* ----------------------------- 云同步面板 ----------------------------- */
+  function openSyncSheet() {
+    const s = Sync.status();
+    let body = "";
+    if (!s.configured) {
+      body = `
+        <div class="field"><label>Supabase URL</label><input class="input" id="syncUrl" placeholder="https://xxxx.supabase.co"></div>
+        <div class="field"><label>Anon Key（公开键，安全）</label><input class="input" id="syncKey" placeholder="eyJhbGci..."></div>
+        <p class="section-desc">在 Supabase 控制台 Project Settings → API 获取。建表与开启邮箱登录见 SUPABASE_SETUP.md。</p>
+        <div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn primary" data-action="sync-save-config">保存并连接</button></div>`;
+    } else if (!s.loggedIn) {
+      body = `
+        <p class="section-desc">已连接：<code>${esc(s.url)}</code></p>
+        <div class="field"><label>邮箱</label><input class="input" id="syncEmail" type="email" placeholder="you@example.com"></div>
+        <div class="field"><label>密码（至少 6 位）</label><input class="input" id="syncPass" type="password" placeholder="••••••"></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn ghost" data-action="sync-clear-config">清除配置</button>
+          <button class="btn ghost" data-action="sync-signup">注册</button>
+          <button class="btn primary" data-action="sync-signin">登录</button>
+        </div>`;
+    } else {
+      const last = s.lastSync ? new Date(s.lastSync).toLocaleString("zh-CN") : "尚未同步";
+      body = `
+        <p class="section-desc">已登录：<b>${esc(s.user.email)}</b></p>
+        <div class="field" style="display:flex;align-items:center;gap:10px">
+          <label style="margin:0">自动同步（本地改动防抖推送到云端）</label>
+          <label class="switch"><input type="checkbox" id="syncAuto" ${s.auto ? "checked" : ""}><span class="slider"></span></label>
+        </div>
+        <p class="section-desc">最近同步：${last}</p>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn ghost" data-action="sync-signout">退出</button>
+          <button class="btn ghost" data-action="sync-pull">拉取云端</button>
+          <button class="btn primary" data-action="sync-push">推送本机</button>
+        </div>`;
+    }
+    openSheet(`
+      <div class="sheet-head"><div class="sheet-title">云同步（Supabase）</div><button class="sheet-close" data-action="close-sheet">×</button></div>
+      <p class="section-desc">电脑与手机登录同一账号，即自动同步「生活记录」与「FIRE 规划」（行情各自实时拉取，不互传）。</p>
+      ${body}`, (sheet) => {
+      const auto = sheet.querySelector("#syncAuto");
+      if (auto) auto.onchange = () => Sync.setAuto(auto.checked);
+      const f = sheet.querySelector("#syncUrl, #syncEmail");
+      if (f) setTimeout(() => f.focus(), 30);
+    });
+  }
+
+  function applyRemote(payload) {
+    if (!payload) return;
+    if (payload.life) App.state.life = Object.assign(Store.defaultState().life, payload.life);
+    if (payload.fire) App.state.fire = Object.assign(Store.defaultState().fire, payload.fire);
+    Store.save(App.state);
+    renderNav(); renderSubtabs(); updateCrumbs(); refreshContent();
+  }
+  async function firstSyncAfterLogin() {
+    try {
+      const r = await Sync.pull();
+      if (r && r.payload) applyRemote(r.payload);
+      else { await Sync.push({ life: App.state.life, fire: App.state.fire }); Sync.touch(); }
+    } catch (e) { console.warn("首次同步失败（可稍后手动同步）：", e); }
+  }
+  function updateSyncBtn(s) {
+    const b = $("#syncBtn"); if (!b) return;
+    if (s.loggedIn) { b.textContent = "☁ 已同步"; b.classList.add("on"); }
+    else { b.textContent = "☁ 同步"; b.classList.remove("on"); }
+  }
+
   /* ----------------------------- 启动 ----------------------------- */
   function init() {
     App.content = $("#content"); App.navList = $("#navList"); App.crumbs = $("#crumbs");
@@ -625,6 +737,12 @@
     renderNav(); renderSubtabs(); updateCrumbs();
     refreshContent();
     bindImport();
+    // 云同步：本地保存后自动推送个人数据（life + fire）
+    if (global.Sync) {
+      Store.setOnSave((state) => Sync.schedulePush(() => ({ life: state.life, fire: state.fire })));
+      Sync.on(updateSyncBtn);
+      updateSyncBtn(Sync.status());
+    }
     $("#menuBtn").addEventListener("click", toggleDrawer);
     $("#navScrim").addEventListener("click", closeDrawer);
     $("#overlay").addEventListener("click", (e) => { if (e.target === App.overlay) closeSheet(); });

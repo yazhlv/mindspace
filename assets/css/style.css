@@ -180,6 +180,31 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .live-badge.fb { background: var(--accent-soft); color: var(--accent-deep); border-color: var(--accent-soft); }
 .live-badge.fb .lb-dot { background: var(--accent); }
 
+/* 云同步按钮 */
+.sync-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 13px; border-radius: 999px; font-size: 12.5px; font-weight: 500;
+  background: var(--surface); color: var(--ink-soft);
+  border: 1px solid var(--line); cursor: pointer; font-family: inherit;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.sync-btn:hover { border-color: var(--accent); color: var(--accent-deep); }
+.sync-btn.on { background: var(--down-soft); color: var(--down); border-color: var(--down-soft); }
+
+/* 自动同步开关 */
+.switch { position: relative; display: inline-block; width: 42px; height: 24px; flex: none; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch .slider {
+  position: absolute; inset: 0; cursor: pointer; border-radius: 999px;
+  background: var(--line); transition: .2s;
+}
+.switch .slider::before {
+  content: ""; position: absolute; height: 18px; width: 18px; left: 3px; top: 3px;
+  background: #fff; border-radius: 50%; transition: .2s; box-shadow: 0 1px 2px rgba(0,0,0,.15);
+}
+.switch input:checked + .slider { background: var(--accent); }
+.switch input:checked + .slider::before { transform: translateX(18px); }
+
 .subtabs { display: flex; gap: 6px; padding: 12px 28px 0; flex-wrap: wrap; }
 .subtab {
   padding: 8px 16px; border-radius: 999px; font-size: 13.5px; color: var(--ink-soft);

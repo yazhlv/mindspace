@@ -39,7 +39,10 @@
       <header class="topbar">
         <button id="menuBtn" class="menu-btn" aria-label="打开导航">☰</button>
         <div id="crumbs" class="crumbs"></div>
-        <div class="topbar-actions" id="topActions"><span id="liveBadge" class="live-badge" hidden></span></div>
+        <div class="topbar-actions" id="topActions">
+          <button class="sync-btn" id="syncBtn" data-action="open-sync" title="云同步">☁ 同步</button>
+          <span id="liveBadge" class="live-badge" hidden></span>
+        </div>
       </header>
       <div id="subtabs" class="subtabs" role="tablist"></div>
       <section id="content" class="content" tabindex="-1"></section>
@@ -58,6 +61,7 @@
   <script src="assets/js/charts.js"></script>
   <script src="assets/js/market.js"></script>
   <script src="assets/js/sections.js"></script>
+  <script src="assets/js/sync.js"></script>
   <script src="assets/js/app.js"></script>
 </body>
 </html>

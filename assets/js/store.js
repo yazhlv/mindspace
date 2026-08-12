@@ -133,6 +133,8 @@
     });
   }
 
+  let onSaveCb = null;
+  function setOnSave(cb) { onSaveCb = cb; }
   function save(state) {
     try {
       localStorage.setItem(KEY, JSON.stringify(state));
@@ -140,6 +142,7 @@
       console.warn("保存失败（可能超出本地存储配额）", e);
       return false;
     }
+    if (onSaveCb) { try { onSaveCb(state); } catch (e) {} }
     return true;
   }
 
@@ -168,7 +171,7 @@
   }
 
   global.Store = {
-    KEY, uid, todayStr, defaultState, load, save, getPath, setPath,
+    KEY, uid, todayStr, defaultState, load, save, getPath, setPath, setOnSave,
     exportData, deepClone
   };
 })(window);
