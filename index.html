@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#FAF8F5" />
+  <meta name="description" content="MindSpace — 一个安静、优雅的集成工作台：生活记录、FIRE 财务规划、股市分析。" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="MindSpace" />
+  <title>MindSpace · 集成工作台</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
+  <link rel="icon" href="assets/icons/icon-192.png" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div id="app" class="app">
+    <!-- 左侧固定纵向导航栏 -->
+    <aside id="nav" class="nav" aria-label="主导航">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">◈</span>
+        <span class="brand-name">Mind<span class="brand-accent">Space</span></span>
+      </div>
+      <nav id="navList" class="nav-list" aria-label="主菜单"></nav>
+      <div class="nav-footer">
+        <button class="nav-foot-btn" data-action="export-data" title="导出全部数据">导出数据</button>
+        <button class="nav-foot-btn ghost" data-action="import-data" title="导入数据">导入</button>
+        <button class="nav-foot-btn ghost danger" data-action="clear-cache" title="清空本地缓存">清空缓存</button>
+        <input type="file" id="importFile" accept="application/json" hidden />
+        <p class="nav-ver">v1.0 · 本地优先 · 可安装</p>
+      </div>
+    </aside>
+
+    <div id="navScrim" class="nav-scrim" hidden></div>
+
+    <!-- 右侧主内容区 -->
+    <main class="main">
+      <header class="topbar">
+        <button id="menuBtn" class="menu-btn" aria-label="打开导航">☰</button>
+        <div id="crumbs" class="crumbs"></div>
+        <div class="topbar-actions" id="topActions"><span id="liveBadge" class="live-badge" hidden></span></div>
+      </header>
+      <div id="subtabs" class="subtabs" role="tablist"></div>
+      <section id="content" class="content" tabindex="-1"></section>
+    </main>
+  </div>
+
+  <!-- 通用弹层容器 -->
+  <div id="overlay" class="overlay" hidden>
+    <div id="sheet" class="sheet" role="dialog" aria-modal="true"></div>
+  </div>
+
+  <!-- 轻提示 -->
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/charts.js"></script>
+  <script src="assets/js/market.js"></script>
+  <script src="assets/js/sections.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
