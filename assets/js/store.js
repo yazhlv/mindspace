@@ -45,7 +45,7 @@
           default: {
             label: "默认情景",
             params: {
-              age: 30, initAssets: 500000, initAnnualSpend: 120000,
+              age: 30, initAnnualSpend: 120000,
               annualIncome: 260000, savingsRate: 45, annualReturn: 7,
               inflation: 3, monthlyInvest: 9750
             }
@@ -53,12 +53,22 @@
           conservative: {
             label: "保守情景",
             params: {
-              age: 30, initAssets: 500000, initAnnualSpend: 120000,
+              age: 30, initAnnualSpend: 120000,
               annualIncome: 260000, savingsRate: 35, annualReturn: 4.5,
               inflation: 3, monthlyInvest: 7600
             }
           }
         },
+        // 净资产 = 储蓄明细 + 投资明细 的合计
+        savings: [
+          { id: uid("sv"), date: "2024-01-10", amount: 200000, note: "工资储蓄" },
+          { id: uid("sv"), date: "2025-03-15", amount: 120000, note: "年终奖" },
+          { id: uid("sv"), date: "2026-02-20", amount: 80000, note: "副业收入" }
+        ],
+        investments: [
+          { id: uid("iv"), date: "2024-06-01", amount: 60000, note: "指数基金定投" },
+          { id: uid("iv"), date: "2025-09-10", amount: 40000, note: "黄金" }
+        ],
         milestones: [
           { age: 35, desc: "净资产突破 100 万", status: "done" },
           { age: 40, desc: "可覆盖 50% 年支出", status: "todo" },
@@ -76,7 +86,7 @@
           d1: "按 4% 法则，覆盖年支出所需本金",
           d2: "净资产 ÷ 目标资产",
           d3: "约 " + fy + " 年后实现独立",
-          d4: "初始资产即当前净值"
+          d4: "储蓄 + 投资 明细合计"
         },
         chartDesc: "假设年化 7% 且每年定投 ¥97,500，资产将在 " + fy + " 年左右触及目标线。"
       },

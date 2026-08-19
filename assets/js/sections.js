@@ -52,19 +52,38 @@
     const p = st.scenarios[st.scenario].params;
     const withdrawal = 0.04; // 4% 法则（可在假设区自由编辑）
     const fireTarget = Math.round(p.initAnnualSpend / withdrawal);
-    const netWorth = Math.round(p.initAssets);
+
+    // 净资产 = 储蓄明细 + 投资明细 的合计，并按日期排序构建累计历史
+    const sav = (st.savings || []).filter((e) => e && isFinite(+e.amount));
+    const inv = (st.investments || []).filter((e) => e && isFinite(+e.amount));
+    const entries = sav.concat(inv)
+      .map((e) => ({ date: e.date || "1970-01-01", v: +e.amount }))
+      .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+
+    let run = 0; const history = [];
+    entries.forEach((e) => { run += e.v; history.push({ date: e.date, value: run }); });
+    const netWorth = run; // 当前净资产（储蓄 + 投资 合计）
+
     const contribution = Math.round(p.annualIncome * p.savingsRate / 100);
     const r = p.annualReturn / 100;
-    let assets = netWorth, age = p.age, years = 0;
-    const series = [assets];
+
+    // 曲线：先绘制按日期的累计历史，再从当前净资产按年复利 + 年定投 推演至目标
+    const series = history.map((h) => h.value);
+    if (series.length === 0) series.push(0);
+    let assets = netWorth, years = 0;
     while (assets < fireTarget && years < 80) {
       assets = assets * (1 + r) + contribution;
-      age += 1; years += 1;
+      years += 1;
       series.push(Math.round(assets));
     }
-    const progress = Math.min(100, Math.round((netWorth / fireTarget) * 100));
+    const progress = fireTarget > 0 ? Math.min(100, Math.round((netWorth / fireTarget) * 100)) : 0;
     const reachAge = p.age + years;
-    return { fireTarget, netWorth, progress, reachAge, series, years, contribution };
+    return {
+      fireTarget, netWorth, progress, reachAge, series, years, contribution,
+      entriesCount: entries.length,
+      firstDate: entries.length ? entries[0].date : null,
+      lastDate: entries.length ? entries[entries.length - 1].date : null
+    };
   }
 
   /* ============================ 渲染分发 ============================ */
@@ -243,9 +262,12 @@
 
   /* ============================ FIRE ============================ */
   function renderFire() {
+    if (App.detail && (App.detail.type === "savings" || App.detail.type === "investments")) return renderFireDetail(App.detail.type);
     const st = S().fire;
     const f = computeFire();
     const p = st.scenarios[st.scenario].params;
+    const savTotal = (st.savings || []).reduce((s, e) => s + (isFinite(+e.amount) ? +e.amount : 0), 0);
+    const invTotal = (st.investments || []).reduce((s, e) => s + (isFinite(+e.amount) ? +e.amount : 0), 0);
     const scnBtns = Object.keys(st.scenarios).map((k) =>
       `<button class="subtab ${st.scenario === k ? "active" : ""}" data-action="set-scenario" data-scn="${k}">${st.scenarios[k].label}</button>`).join("");
 
@@ -270,7 +292,6 @@
 
     const params = `
       <div class="param"><div class="p-label">当前年龄</div><div class="p-val"><span class="editable num" data-path="fire.scenarios.${st.scenario}.params.age" data-recalc="fire">${p.age}</span><span class="p-unit">岁</span></div></div>
-      <div class="param"><div class="p-label">初始资产</div><div class="p-val"><span class="editable num" data-path="fire.scenarios.${st.scenario}.params.initAssets" data-recalc="fire">${fmtNum(p.initAssets, 0)}</span><span class="p-unit">元</span></div></div>
       <div class="param"><div class="p-label">初始年支出</div><div class="p-val"><span class="editable num" data-path="fire.scenarios.${st.scenario}.params.initAnnualSpend" data-recalc="fire">${fmtNum(p.initAnnualSpend, 0)}</span><span class="p-unit">元</span></div></div>
       <div class="param"><div class="p-label">年税后收入</div><div class="p-val"><span class="editable num" data-path="fire.scenarios.${st.scenario}.params.annualIncome" data-recalc="fire">${fmtNum(p.annualIncome, 0)}</span><span class="p-unit">元</span></div></div>
       <div class="param"><div class="p-label">存储率</div><div class="p-val"><span class="editable num" data-path="fire.scenarios.${st.scenario}.params.savingsRate" data-recalc="fire">${p.savingsRate}</span><span class="p-unit">%</span></div></div>
@@ -308,6 +329,12 @@
 
       <div class="kpi-row">${kpis}</div>
 
+      <div class="fire-assets">
+        <div class="fa-block"><div class="fa-label">储蓄合计</div><div class="fa-val">${fmtMoney(savTotal)}<small>元</small></div><button class="btn sm ghost" data-action="fire-detail" data-type="savings">查看明细 ›</button></div>
+        <div class="fa-block"><div class="fa-label">投资合计</div><div class="fa-val">${fmtMoney(invTotal)}<small>元</small></div><button class="btn sm ghost" data-action="fire-detail" data-type="investments">查看明细 ›</button></div>
+        <div class="fa-block total"><div class="fa-label">净资产合计</div><div class="fa-val">${fmtMoney(f.netWorth)}<small>元</small></div><div class="fa-sub">储蓄 ${fmtMoney(savTotal)} + 投资 ${fmtMoney(invTotal)}</div></div>
+      </div>
+
       <div class="grid grid-2" style="margin-bottom:18px">
         <div class="card"><div class="card-head"><div class="card-title">模拟设定</div></div><div class="param-grid">${params}</div></div>
         <div class="card warm"><div class="card-head"><div class="card-title">目标设置</div></div>
@@ -322,7 +349,9 @@
       <div class="card" style="margin-bottom:18px">
         <div class="card-head"><div class="card-title">资产增长曲线</div><div class="card-sub">随参数实时更新</div></div>
         <canvas data-chart="fire" id="fireChart" style="width:100%;height:240px;display:block"></canvas>
-        <p class="section-desc" style="margin:12px 0 0"><span class="editable" data-path="fire.chartDesc">${escapeHtml(st.chartDesc)}</span></p>
+        <p class="section-desc" style="margin:12px 0 0"><span class="editable" data-path="fire.chartDesc">${escapeHtml(st.chartDesc)}</span>${
+          f.entriesCount ? `<br><span style="color:var(--ink-mute)">数据区间：${f.firstDate} ~ ${f.lastDate} · 共 ${f.entriesCount} 笔 · 净资产 ${fmtMoney(f.netWorth)}（随明细实时变动）</span>` : ""
+        }</p>
       </div>
 
       <div class="card" style="margin-bottom:18px">
@@ -336,6 +365,34 @@
         <div class="param-grid" style="margin-top:16px">
           ${st.assumptions.map((a, i) => `<div class="param"><div class="p-label">${escapeHtml(a.label)} 偏差对比</div><div class="p-val"><span class="editable num" data-path="fire.assumptions.${i}.val">${a.val}</span><span class="p-unit">${a.unit}</span> 基准</div></div>`).join("")}
         </div>
+      </div>`;
+  }
+
+  /* 储蓄 / 投资 明细页：记录每笔日期与金额，改动实时反映到净资产与曲线 */
+  function renderFireDetail(type) {
+    const isSav = type === "savings";
+    const list = (S().fire[type] || []).slice().sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+    const total = list.reduce((s, e) => s + (isFinite(+e.amount) ? +e.amount : 0), 0);
+    const rows = list.map((e) => `
+      <div class="fa-row">
+        <div class="fa-date">${escapeHtml(e.date || "—")}</div>
+        <div class="fa-note">${escapeHtml(e.note || "（无备注）")}</div>
+        <div class="fa-amt">${fmtMoney(+e.amount)}</div>
+        <div class="fa-acts">
+          <button class="btn sm ghost" data-action="edit-entry" data-type="${type}" data-id="${e.id}">编辑</button>
+          <button class="btn sm ghost" data-action="rm-entry" data-type="${type}" data-id="${e.id}">删除</button>
+        </div>
+      </div>`).join("");
+    return `
+      <button class="btn ghost sm" data-action="fire-back" style="margin-bottom:14px">‹ 返回 FIRE</button>
+      <div class="fire-head">
+        <h2 class="section-title">${isSav ? "储蓄明细" : "投资明细"}</h2>
+        <div class="fire-meta"><span class="chip">合计 ${fmtMoney(total)} · 共 ${list.length} 笔</span></div>
+      </div>
+      <p class="section-desc">记录每笔${isSav ? "储蓄" : "投资"}的日期与金额（可填负数表示取出）；改动会实时反映到「净资产合计」与资产增长曲线。</p>
+      <div class="card">
+        <div class="fa-list">${rows || '<div class="empty-hint">暂无记录，点击「添加一笔」开始记录</div>'}</div>
+        <button class="btn primary sm" data-action="add-entry" data-type="${type}" style="margin-top:16px">+ 添加一笔</button>
       </div>`;
   }
 

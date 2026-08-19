@@ -398,6 +398,32 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 /* ============================ FIRE ============================ */
 .fire-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
 .fire-title { font-family: var(--serif); font-size: 26px; font-weight: 600; letter-spacing: .5px; }
+
+/* 资产构成（储蓄 + 投资） */
+.fire-assets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.fa-block { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.fa-block .fa-label { font-size: 12.5px; color: var(--ink-mute); }
+.fa-block .fa-val { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.fa-block .fa-val small { font-size: 13px; font-weight: 500; color: var(--ink-soft); margin-left: 3px; }
+.fa-block.total { background: var(--accent-wash); border-color: var(--accent-soft); }
+.fa-block.total .fa-val { color: var(--accent-deep); }
+.fa-block.total .fa-sub { font-size: 11.5px; color: var(--ink-mute); }
+.fa-block .btn { align-self: flex-start; margin-top: 2px; }
+/* 明细列表 */
+.fa-list { display: flex; flex-direction: column; gap: 10px; }
+.fa-row { display: grid; grid-template-columns: 120px 1fr auto auto; gap: 12px; align-items: center; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.fa-row .fa-date { font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.fa-row .fa-note { font-size: 14px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fa-row .fa-amt { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; min-width: 92px; }
+.fa-row .fa-acts { display: flex; gap: 6px; }
+@media (max-width: 640px) {
+  .fire-assets { grid-template-columns: 1fr; }
+  .fa-row { grid-template-columns: 1fr auto; grid-template-areas: "date amt" "note acts"; row-gap: 6px; }
+  .fa-row .fa-date { grid-area: date; }
+  .fa-row .fa-amt { grid-area: amt; }
+  .fa-row .fa-note { grid-area: note; }
+  .fa-row .fa-acts { grid-area: acts; justify-content: flex-end; }
+}
 .fire-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 22px 0; }
 .kpi {

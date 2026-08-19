@@ -271,6 +271,16 @@
         else toast("已生成规划摘要");
         break;
       }
+      case "fire-detail": App.detail = { type: d.type }; refreshContent(); break;
+      case "fire-back": App.detail = null; refreshContent(); break;
+      case "add-entry": openEntrySheet(d.type, null); break;
+      case "edit-entry": openEntrySheet(d.type, d.id); break;
+      case "rm-entry": {
+        const arr = App.state.fire[d.type] || [];
+        const i = arr.findIndex((x) => x.id === d.id);
+        if (i >= 0) { arr.splice(i, 1); Store.save(App.state); refreshContent(); }
+        break;
+      }
       case "export-data": Store.exportData(App.state); break;
       case "import-data": $("#importFile").click(); break;
       case "clear-cache": openConfirm(
@@ -560,6 +570,37 @@
       };
       if (i != null) sheet.querySelector("#mDel").onclick = () => {
         App.state.fire.milestones.splice(i, 1); Store.save(App.state); closeSheet(); refreshContent();
+      };
+    });
+  }
+
+  function openEntrySheet(type, id) {
+    const arr = App.state.fire[type] || (App.state.fire[type] = []);
+    const e = id != null ? arr.find((x) => x.id === id) : null;
+    const isSav = type === "savings";
+    const cur = e || { date: new Date().toISOString().slice(0, 10), amount: "", note: "" };
+    openSheet(`
+      <div class="sheet-head"><div class="sheet-title">${id != null ? "编辑记录" : "添加记录"}（${isSav ? "储蓄" : "投资"}）</div><button class="sheet-close" data-action="close-sheet">×</button></div>
+      <div class="field"><label>日期</label><input class="input" type="date" id="eDate" value="${esc(cur.date)}"></div>
+      <div class="field"><label>金额（元 · ${isSav ? "储蓄" : "投资"}，填负数表示取出）</label><input class="input" type="number" id="eAmt" value="${cur.amount === "" ? "" : cur.amount}" placeholder="0"></div>
+      <div class="field"><label>备注</label><input class="input" id="eNote" value="${esc(cur.note || "")}" placeholder="如：工资储蓄 / 指数基金定投"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        ${id != null ? '<button class="btn ghost" id="eDel">删除</button>' : ""}
+        <button class="btn primary" id="eSave">保存</button></div>`, (sheet) => {
+      sheet.querySelector("#eSave").onclick = () => {
+        const data = {
+          date: sheet.querySelector("#eDate").value || new Date().toISOString().slice(0, 10),
+          amount: parseFloat(sheet.querySelector("#eAmt").value) || 0,
+          note: sheet.querySelector("#eNote").value
+        };
+        if (e) Object.assign(e, data);
+        else arr.push({ id: "en_" + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4), ...data });
+        Store.save(App.state); closeSheet(); refreshContent();
+      };
+      if (id != null) sheet.querySelector("#eDel").onclick = () => {
+        const i = arr.findIndex((x) => x.id === id);
+        if (i >= 0) arr.splice(i, 1);
+        Store.save(App.state); closeSheet(); refreshContent();
       };
     });
   }
