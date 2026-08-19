@@ -235,7 +235,9 @@
         sub = "天"; ringCls = "count";
       } else {
         let diff = Math.round((today - target) / 86400000);
-        big = diff; sub = "天"; ringCls = "acc";
+        const neg = diff < 0; diff = Math.abs(diff);
+        big = (neg ? "还有 " : "已经 ") + diff;
+        sub = "天"; ringCls = "acc";
       }
       return `
       <div class="anni">

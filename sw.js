@@ -1,7 +1,7 @@
 /* MindSpace Service Worker — 离线优先缓存，支持添加到主屏 (PWA)
    策略：HTML 走 network-first（始终拿到最新页面），静态资源走 cache-first + 后台更新。
    每次发版只需修改 CACHE 名称即可让旧缓存失效。 */
-const CACHE = "mindspace-v8";
+const CACHE = "mindspace-v9";
 const ASSETS = [
   "./",
   "./index.html",

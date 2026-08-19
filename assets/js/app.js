@@ -443,8 +443,10 @@
   }
 
   function editAnni(id) {
-    const a = id ? App.state.life.anniversaries.find((x) => x.id === id) : null;
+    const idx = id ? App.state.life.anniversaries.findIndex((x) => x.id === id) : -1;
+    const a = idx >= 0 ? App.state.life.anniversaries[idx] : null;
     const cur = a || { name: "", date: Store.todayStr(), repeat: true, mode: "acc" };
+    const canSort = id && App.state.life.anniversaries.length > 1;
     openSheet(`
       <div class="sheet-head"><div class="sheet-title">${id ? "编辑纪念日" : "新增纪念日"}</div><button class="sheet-close" data-action="close-sheet">×</button></div>
       <div class="field"><label>名称</label><input class="input" id="anName" value="${esc(cur.name)}"></div>
@@ -455,8 +457,13 @@
           <button class="${cur.mode === "acc" ? "on" : ""}" data-m="acc">累计日</button>
         </div></div>
       <div class="field"><label><input type="checkbox" id="anRepeat" ${cur.repeat ? "checked" : ""}> 每年重复</label></div>
+      ${canSort ? `<div class="field"><label>排序</label><div style="display:flex;gap:8px">
+          <button class="btn sm" id="anTop">置顶</button>
+          <button class="btn sm" id="anUp">上移</button>
+          <button class="btn sm" id="anDown">下移</button>
+        </div></div>` : ""}
       <div style="display:flex;gap:10px;justify-content:flex-end">
-        ${id ? '<button class="btn ghost" id="anDel">删除</button>' : ""}
+        ${id ? '<button class="btn ghost danger" id="anDel">删除</button>' : ""}
         <button class="btn primary" id="anSave">保存</button></div>`, (sheet) => {
       let mode = cur.mode;
       sheet.querySelectorAll(".mode-toggle button").forEach((b) => b.onclick = () => {
@@ -464,6 +471,17 @@
         sheet.querySelectorAll(".mode-toggle button").forEach((x) => x.classList.remove("on"));
         b.classList.add("on");
       });
+      function swap(i, j) {
+        const arr = App.state.life.anniversaries;
+        if (j < 0 || j >= arr.length) return;
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+        Store.save(App.state); closeSheet(); refreshContent();
+      }
+      if (canSort) {
+        sheet.querySelector("#anTop").onclick = () => { swap(idx, 0); };
+        sheet.querySelector("#anUp").onclick = () => { swap(idx, idx - 1); };
+        sheet.querySelector("#anDown").onclick = () => { swap(idx, idx + 1); };
+      }
       sheet.querySelector("#anSave").onclick = () => {
         const data = { name: sheet.querySelector("#anName").value || "未命名", date: sheet.querySelector("#anDate").value, repeat: sheet.querySelector("#anRepeat").checked, mode };
         if (a) Object.assign(a, data);
@@ -471,6 +489,7 @@
         Store.save(App.state); closeSheet(); refreshContent();
       };
       if (id) sheet.querySelector("#anDel").onclick = () => {
+        if (!confirm("确定删除这个纪念日吗？")) return;
         App.state.life.anniversaries = App.state.life.anniversaries.filter((x) => x.id !== id);
         Store.save(App.state); closeSheet(); refreshContent();
       };
@@ -846,8 +865,8 @@
       Sync.on(updateSyncBtn);
       updateSyncBtn(Sync.status());
     }
-    $("#menuBtn").addEventListener("click", toggleDrawer);
-    $("#navScrim").addEventListener("click", closeDrawer);
+    $("#menuBtn").addEventListener("pointerup", (e) => { e.preventDefault(); toggleDrawer(); });
+    $("#navScrim").addEventListener("pointerup", (e) => { e.preventDefault(); closeDrawer(); });
     $("#overlay").addEventListener("click", (e) => { if (e.target === App.overlay) closeSheet(); });
     window.addEventListener("resize", () => drawAll(App.content));
     seedSeries();
