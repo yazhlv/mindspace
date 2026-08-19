@@ -606,7 +606,14 @@
   }
 
   /* ----------------------------- 移动端抽屉 ----------------------------- */
-  function toggleDrawer() { $("#nav").classList.toggle("open"); $("#navScrim").hidden = !$("#nav").classList.contains("open"); }
+  let _lastToggle = 0;
+  function toggleDrawer() {
+    const now = Date.now();
+    if (now - _lastToggle < 400) return; // 吸收触屏上 touchend/click 可能的重复触发
+    _lastToggle = now;
+    $("#nav").classList.toggle("open");
+    $("#navScrim").hidden = !$("#nav").classList.contains("open");
+  }
   function closeDrawer() { $("#nav").classList.remove("open"); $("#navScrim").hidden = true; }
 
   /* ----------------------------- 实时数据（真实接口 + 模拟兜底） ----------------------------- */
@@ -840,9 +847,7 @@
       updateSyncBtn(Sync.status());
     }
     $("#menuBtn").addEventListener("click", toggleDrawer);
-    $("#menuBtn").addEventListener("touchend", (e) => { e.preventDefault(); toggleDrawer(); });
     $("#navScrim").addEventListener("click", closeDrawer);
-    $("#navScrim").addEventListener("touchend", (e) => { e.preventDefault(); closeDrawer(); });
     $("#overlay").addEventListener("click", (e) => { if (e.target === App.overlay) closeSheet(); });
     window.addEventListener("resize", () => drawAll(App.content));
     seedSeries();
