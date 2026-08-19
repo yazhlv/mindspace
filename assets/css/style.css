@@ -52,6 +52,8 @@
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* 关键修复：hidden 属性必须始终隐藏元素（避免 .overlay{display:flex} 等覆盖导致全屏遮罩常驻、整页模糊且无法点击） */
+[hidden] { display: none !important; }
 html { touch-action: manipulation; -webkit-text-size-adjust: 100%; }
 html, body { height: 100%; }
 body {
