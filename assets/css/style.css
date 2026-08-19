@@ -519,13 +519,15 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 @media (max-width: 880px) {
   .nav {
     position: fixed; left: 0; top: 0;
+    width: 82vw; max-width: 300px;
     display: flex;
-    transform: translateX(-110%);
-    visibility: hidden;
+    transform: translateX(-105%);
+    pointer-events: none;
     box-shadow: var(--shadow-lg);
-    transition: transform .28s var(--ease), visibility .28s;
+    transition: transform .28s var(--ease);
+    will-change: transform;
   }
-  .nav.open { transform: translateX(0); visibility: visible; }
+  .nav.open { transform: translateX(0); pointer-events: auto; }
   .menu-btn { display: grid; place-items: center; touch-action: manipulation; }
   .content { padding: 18px 16px 56px; }
   .input, .textarea, .select { font-size: 16px; }

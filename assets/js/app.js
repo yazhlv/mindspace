@@ -634,6 +634,8 @@
     $("#navScrim").hidden = !$("#nav").classList.contains("open");
   }
   function closeDrawer() { $("#nav").classList.remove("open"); $("#navScrim").hidden = true; }
+  // 暴露到全局，使 index.html 中的内联 onclick 可直接调用（不依赖 init 是否执行成功）
+  window.MSDrawer = { toggle: toggleDrawer, close: closeDrawer };
 
   /* ----------------------------- 实时数据（真实接口 + 模拟兜底） ----------------------------- */
   function seedOne(code, base) {
@@ -860,13 +862,14 @@
     bindImport();
     initInstallBanner();
     // 云同步：本地保存后自动推送个人数据（life + fire）
-    if (global.Sync) {
-      Store.setOnSave((state) => Sync.schedulePush(() => ({ life: state.life, fire: state.fire })));
-      Sync.on(updateSyncBtn);
-      updateSyncBtn(Sync.status());
-    }
-    $("#menuBtn").addEventListener("pointerup", (e) => { e.preventDefault(); toggleDrawer(); });
-    $("#navScrim").addEventListener("pointerup", (e) => { e.preventDefault(); closeDrawer(); });
+    try {
+      if (global.Sync) {
+        Store.setOnSave((state) => Sync.schedulePush(() => ({ life: state.life, fire: state.fire })));
+        Sync.on(updateSyncBtn);
+        updateSyncBtn(Sync.status());
+      }
+    } catch (e) { console.warn("sync init failed:", e); }
+    // 抽屉开关改用 index.html 内联 onclick（MSDrawer.toggle/close），此处不再重复绑定，避免事件类型兼容问题
     $("#overlay").addEventListener("click", (e) => { if (e.target === App.overlay) closeSheet(); });
     window.addEventListener("resize", () => drawAll(App.content));
     seedSeries();

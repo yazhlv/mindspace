@@ -45,12 +45,12 @@
       </div>
     </aside>
 
-    <div id="navScrim" class="nav-scrim" hidden></div>
+    <div id="navScrim" class="nav-scrim" hidden onclick="MSDrawer.close()"></div>
 
     <!-- 右侧主内容区 -->
     <main class="main">
       <header class="topbar">
-        <button id="menuBtn" class="menu-btn" aria-label="打开导航">☰</button>
+        <button id="menuBtn" class="menu-btn" aria-label="打开导航" onclick="MSDrawer.toggle()">☰</button>
         <div id="crumbs" class="crumbs"></div>
         <div class="topbar-actions" id="topActions">
           <button class="sync-btn" id="syncBtn" data-action="open-sync" title="云同步">☁ 同步</button>
