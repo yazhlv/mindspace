@@ -767,6 +767,23 @@
     const b = $("#installBanner"); if (b) b.hidden = false;
   }
 
+  /* ----------------------------- 实时时钟（大盘实时区） ----------------------------- */
+  function startClock() {
+    const WEEK = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+    const pad = (n) => (n < 10 ? "0" + n : "" + n);
+    function update() {
+      const clock = document.getElementById("mktClock");
+      if (!clock) return; // 仅在大盘实时区渲染时更新，离开即停
+      const d = new Date();
+      const dateEl = document.getElementById("mktDate");
+      const timeEl = document.getElementById("mktTime");
+      if (dateEl) dateEl.textContent = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${WEEK[d.getDay()]}`;
+      if (timeEl) timeEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+    update();
+    setInterval(update, 1000);
+  }
+
   /* ----------------------------- 启动 ----------------------------- */
   function init() {
     App.content = $("#content"); App.navList = $("#navList"); App.crumbs = $("#crumbs");
@@ -787,6 +804,7 @@
     window.addEventListener("resize", () => drawAll(App.content));
     seedSeries();
     updateLiveBadge();
+    startClock();
     scheduleLive(1500);
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));

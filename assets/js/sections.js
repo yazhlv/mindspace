@@ -378,7 +378,13 @@
     const volText = idx.volume ? (idx.volume / 1e8).toFixed(2) + " 亿手" : "—";
 
     return `
-      <h2 class="section-title">大盘实时</h2>
+      <div class="mkt-head">
+        <h2 class="section-title">大盘实时</h2>
+        <div class="mkt-clock" id="mktClock" title="本地日期与实时时间">
+          <span class="mkt-date" id="mktDate"></span>
+          <span class="mkt-time" id="mktTime"></span>
+        </div>
+      </div>
       <p class="section-desc">${liveNote()}点击卡片切换主图。</p>
       <div class="card" style="margin-bottom:18px">
         <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:10px">
