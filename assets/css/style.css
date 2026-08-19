@@ -540,14 +540,31 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .subtabs { padding: 10px 12px 0; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .subtabs::-webkit-scrollbar { display: none; }
   .subtab { flex: 0 0 auto; white-space: nowrap; padding: 7px 13px; font-size: 13px; }
-  .grid-2, .grid-3, .grid-4, .kpi-row, .param-grid, .assume-grid { grid-template-columns: 1fr 1fr; }
+  .grid-2, .grid-3, .grid-4, .param-grid, .assume-grid { grid-template-columns: 1fr 1fr; }
+  .kpi-row {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 12px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .kpi-row::-webkit-scrollbar { display: none; }
+  .kpi-row .kpi {
+    flex: 0 0 auto;
+    width: 72vw;
+    max-width: 260px;
+    min-width: 180px;
+  }
   .cal-wrap { grid-template-columns: 1fr; }
   .fire-title { font-size: 22px; }
   .watch-row { grid-template-columns: 1.4fr 1fr auto; }
   .watch-row .w-acts { display: none; }
 }
 @media (max-width: 560px) {
-  .grid-2, .grid-3, .grid-4, .kpi-row, .param-grid, .assume-grid, .param-grid { grid-template-columns: 1fr; }
+  .grid-2, .grid-3, .grid-4, .param-grid, .assume-grid, .param-grid { grid-template-columns: 1fr; }
+  .kpi-row .kpi { width: 82vw; max-width: 280px; }
   .gallery { columns: 2 130px; }
   .crumbs .cr-main { font-size: 15px; }
   .anni {

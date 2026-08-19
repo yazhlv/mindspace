@@ -122,12 +122,33 @@
 
   document.addEventListener("focusout", (e) => {
     const el = e.target.closest && e.target.closest(".editable");
-    if (el) commitEdit(el);
+    if (el) { el.contentEditable = "false"; commitEdit(el); }
   });
   document.addEventListener("keydown", (e) => {
     if (e.target.classList && e.target.classList.contains("editable") && e.key === "Enter") {
       e.preventDefault(); e.target.blur();
     }
+  });
+  // 点击/触摸 .editable 时进入编辑模式（之前缺少这步，导致所有文字都无法修改）
+  function enableEdit(el) {
+    if (!el || el.contentEditable === "true") return;
+    el.contentEditable = "true";
+    el.focus();
+    try {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } catch (e) {}
+  }
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest && e.target.closest(".editable");
+    if (el) { e.stopPropagation(); enableEdit(el); }
+  });
+  document.addEventListener("touchend", (e) => {
+    const el = e.target.closest && e.target.closest(".editable");
+    if (el) { e.preventDefault(); e.stopPropagation(); enableEdit(el); }
   });
 
   /* ----------------------------- 弹层 / 抽屉 ----------------------------- */
@@ -662,6 +683,11 @@
   function updateLiveBadge() {
     const b = $("#liveBadge");
     if (!b) return;
+    // 大盘状态徽章只在股市板块显示
+    if (!App.route || App.route.section !== "market") {
+      b.hidden = true;
+      return;
+    }
     b.hidden = false;
     if (App.marketStatus === "live") {
       b.className = "live-badge live";

@@ -286,11 +286,7 @@
       <div class="kpi"><div class="k-label"><span class="editable" data-path="fire.titles.k3">${escapeHtml(T.k3)}</span></div>
         <div class="k-val">${f.reachAge}<span class="k-unit">岁</span></div>
         <div class="progress"><span style="width:${Math.min(100, (p.age / f.reachAge) * 100)}%"></span></div>
-        <div class="k-desc"><span class="editable" data-path="fire.descs.d3">${escapeHtml(D.d3)}</span></div></div>
-      <div class="kpi"><div class="k-label"><span class="editable" data-path="fire.titles.k4">${escapeHtml(T.k4)}</span></div>
-        <div class="k-val">${fmtMoney(f.netWorth)}</div>
-        <div class="progress"><span style="width:${f.progress}%"></span></div>
-        <div class="k-desc"><span class="editable" data-path="fire.descs.d4">${escapeHtml(D.d4)}</span></div></div>`;
+        <div class="k-desc"><span class="editable" data-path="fire.descs.d3">${escapeHtml(D.d3)}</span></div></div>`;
 
     const params = `
       <div class="param"><div class="p-label">当前年龄</div><div class="p-val"><span class="editable num" data-path="fire.scenarios.${st.scenario}.params.age" data-recalc="fire">${p.age}</span><span class="p-unit">岁</span></div></div>
