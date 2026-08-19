@@ -122,33 +122,36 @@
 
   document.addEventListener("focusout", (e) => {
     const el = e.target.closest && e.target.closest(".editable");
-    if (el) { el.contentEditable = "false"; commitEdit(el); }
+    if (el && el.getAttribute("contenteditable") === "true") { el.setAttribute("contenteditable", "false"); commitEdit(el); }
   });
-  document.addEventListener("keydown", (e) => {
-    if (e.target.classList && e.target.classList.contains("editable") && e.key === "Enter") {
-      e.preventDefault(); e.target.blur();
-    }
-  });
-  // 点击/触摸 .editable 时进入编辑模式（之前缺少这步，导致所有文字都无法修改）
-  function enableEdit(el) {
-    if (!el || el.contentEditable === "true") return;
-    el.contentEditable = "true";
-    el.focus();
-    try {
-      const range = document.createRange();
-      range.selectNodeContents(el);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-    } catch (e) {}
+  // 点击 .editable 弹出原生输入框编辑。
+  // 说明：移动端（尤其华为 WebView）用 contentEditable + focus() 经常无法弹出软键盘；
+  // 改用底部弹层 + 真实 <input>，在所有浏览器都能稳定聚焦与输入。
+  function editField(el) {
+    const path = el.dataset.path;
+    if (!path) return;
+    const isNum = el.classList.contains("num");
+    const cur = (el.textContent || "").replace(/\s+/g, " ").trim();
+    openSheet(`
+      <div class="sheet-head"><div class="sheet-title">编辑内容</div><button class="sheet-close" data-action="close-sheet">×</button></div>
+      <div class="field"><label>${isNum ? "数值" : "内容"}</label><input class="input" id="fVal" type="${isNum ? "number" : "text"}" inputmode="${isNum ? "decimal" : "text"}" value="${esc(cur)}" placeholder="请输入"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn primary" id="fSave">保存</button></div>
+    `, (sheet) => {
+      const inp = sheet.querySelector("#fVal");
+      if (inp) setTimeout(() => { try { inp.focus(); if (inp.select) inp.select(); } catch (e) {} }, 30);
+      sheet.querySelector("#fSave").onclick = () => {
+        let v = inp.value;
+        if (isNum) { let n = parseFloat(String(v).replace(/[^\d.\-]/g, "")); if (isNaN(n)) n = 0; v = n; }
+        Store.setPath(App.state, path, v);
+        Store.save(App.state);
+        closeSheet();
+        refreshContent();
+      };
+    });
   }
   document.addEventListener("click", (e) => {
     const el = e.target.closest && e.target.closest(".editable");
-    if (el) { e.stopPropagation(); enableEdit(el); }
-  });
-  document.addEventListener("touchend", (e) => {
-    const el = e.target.closest && e.target.closest(".editable");
-    if (el) { e.preventDefault(); e.stopPropagation(); enableEdit(el); }
+    if (el) { e.preventDefault(); e.stopPropagation(); editField(el); }
   });
 
   /* ----------------------------- 弹层 / 抽屉 ----------------------------- */

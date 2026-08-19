@@ -275,14 +275,18 @@
 
     const T = st.titles, D = st.descs;
     const kpis = `
-      <div class="kpi"><div class="k-label"><span class="editable" data-path="fire.titles.k1">${escapeHtml(T.k1)}</span></div>
-        <div class="k-val">${fmtMoney(f.fireTarget)}</div>
+      <div class="kpi"><div class="k-label"><span class="editable" data-path="fire.titles.k4">${escapeHtml(T.k4)}</span></div>
+        <div class="k-val">${fmtMoney(f.netWorth)}</div>
         <div class="progress"><span style="width:${f.progress}%"></span></div>
-        <div class="k-desc"><span class="editable" data-path="fire.descs.d1">${escapeHtml(D.d1)}</span></div></div>
+        <div class="k-desc"><span class="editable" data-path="fire.descs.d4">${escapeHtml(D.d4)}</span></div></div>
       <div class="kpi"><div class="k-label"><span class="editable" data-path="fire.titles.k2">${escapeHtml(T.k2)}</span></div>
         <div class="k-val">${f.progress}<span class="k-unit">%</span></div>
         <div class="progress"><span style="width:${f.progress}%"></span></div>
         <div class="k-desc"><span class="editable" data-path="fire.descs.d2">${escapeHtml(D.d2)}</span></div></div>
+      <div class="kpi"><div class="k-label"><span class="editable" data-path="fire.titles.k1">${escapeHtml(T.k1)}</span></div>
+        <div class="k-val">${fmtMoney(f.fireTarget)}</div>
+        <div class="progress"><span style="width:${f.progress}%"></span></div>
+        <div class="k-desc"><span class="editable" data-path="fire.descs.d1">${escapeHtml(D.d1)}</span></div></div>
       <div class="kpi"><div class="k-label"><span class="editable" data-path="fire.titles.k3">${escapeHtml(T.k3)}</span></div>
         <div class="k-val">${f.reachAge}<span class="k-unit">岁</span></div>
         <div class="progress"><span style="width:${Math.min(100, (p.age / f.reachAge) * 100)}%"></span></div>
