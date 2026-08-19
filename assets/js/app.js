@@ -324,6 +324,10 @@
           } catch (e) { toast("拉取失败：" + (e.message || e)); }
         })();
         break;
+      case "dismiss-install": {
+        const b = $("#installBanner"); if (b) { b.hidden = true; try { localStorage.setItem("mindspace_banner_dismissed", "1"); } catch (e) {} }
+        break;
+      }
       case "sync-push":
         (async () => {
           try { await Sync.push({ life: App.state.life, fire: App.state.fire }); Sync.touch(); openSyncSheet(); toast("已推送到云端"); }
@@ -730,6 +734,19 @@
     else { b.textContent = "☁ 同步"; b.classList.remove("on"); }
   }
 
+  /* ----------------------------- PWA 安装提示 ----------------------------- */
+  function isStandalone() {
+    return window.matchMedia("(display-mode: standalone)").matches ||
+           window.matchMedia("(display-mode: fullscreen)").matches ||
+           window.matchMedia("(display-mode: minimal-ui)").matches ||
+           navigator.standalone === true;
+  }
+  function initInstallBanner() {
+    if (isStandalone()) return;
+    try { if (localStorage.getItem("mindspace_banner_dismissed") === "1") return; } catch (e) {}
+    const b = $("#installBanner"); if (b) b.hidden = false;
+  }
+
   /* ----------------------------- 启动 ----------------------------- */
   function init() {
     App.content = $("#content"); App.navList = $("#navList"); App.crumbs = $("#crumbs");
@@ -737,6 +754,7 @@
     renderNav(); renderSubtabs(); updateCrumbs();
     refreshContent();
     bindImport();
+    initInstallBanner();
     // 云同步：本地保存后自动推送个人数据（life + fire）
     if (global.Sync) {
       Store.setOnSave((state) => Sync.schedulePush(() => ({ life: state.life, fire: state.fire })));

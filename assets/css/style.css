@@ -51,7 +51,8 @@
   --serif: "Songti SC","STSong","Georgia",serif;
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { touch-action: manipulation; -webkit-text-size-adjust: 100%; }
 html, body { height: 100%; }
 body {
   margin: 0;
@@ -62,8 +63,28 @@ body {
   text-rendering: optimizeLegibility;
   line-height: 1.55;
 }
-button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; touch-action: manipulation; }
 ::selection { background: var(--accent-soft); }
+
+/* PWA 安装提示横幅 */
+.install-banner {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 110;
+  background: var(--accent-deep); color: #fff; font-size: 13px;
+  padding: 11px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  box-shadow: var(--shadow-md); line-height: 1.45;
+}
+.install-banner button {
+  width: 28px; height: 28px; border-radius: 8px; flex: 0 0 28px;
+  display: grid; place-items: center; font-size: 18px; background: rgba(255,255,255,.18);
+}
+.install-banner[hidden] { display: none; }
+.install-banner:not([hidden]) + .app { margin-top: 54px; }
+
+/* 触屏交互统一：防止双击缩放、点击后有清晰反馈 */
+.nav-item, .nav-sub-item, .subtab, .btn, .cal-cell, .photo, .watch-row, .index-card, .globe, .chip, .nav-foot-btn, .sync-btn, .menu-btn, .sheet-close, .cal-nav-btn, .mode-toggle button {
+  touch-action: manipulation; -webkit-touch-callout: none;
+}
+.nav-item:active, .nav-sub-item:active, .subtab:active, .btn:active, .cal-cell:active, .photo:active, .watch-row:active, .index-card:active, .globe:active, .chip:active, .nav-foot-btn:active, .sync-btn:active, .menu-btn:active { opacity: .85; }
 
 /* 滚动条 */
 *::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -452,11 +473,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 @media (max-width: 880px) {
   .nav {
     position: fixed; left: 0; top: 0; transform: translateX(-104%);
-    transition: transform .28s var(--ease); box-shadow: var(--shadow-lg);
+    transition: transform .28s var(--ease), visibility .28s; box-shadow: var(--shadow-lg);
+    visibility: hidden; pointer-events: none;
   }
-  .nav.open { transform: translateX(0); }
-  .menu-btn { display: grid; place-items: center; }
+  .nav.open { transform: translateX(0); visibility: visible; pointer-events: auto; }
+  .menu-btn { display: grid; place-items: center; touch-action: manipulation; }
   .content { padding: 18px 16px 56px; }
+  .input, .textarea, .select { font-size: 16px; }
   .topbar { padding: 14px 16px; }
   .subtabs { padding: 10px 16px 0; }
   .grid-2, .grid-3, .grid-4, .kpi-row, .param-grid, .assume-grid { grid-template-columns: 1fr 1fr; }
