@@ -5,6 +5,9 @@
 (function () {
   "use strict";
 
+  // 与 version.json 保持一致；若线上版本号更高，说明本地运行的是被 Service Worker / CDN 缓存的旧代码，自动重载以拿到最新版。
+  const BUILD_VERSION = "13";
+
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
   const esc = (s) => Sections.escapeHtml(s);
@@ -882,8 +885,22 @@
     setInterval(update, 1000);
   }
 
+  /* ----------------------------- 版本守卫 ----------------------------- */
+  // 防止 Service Worker / CDN 把旧 app.js 长期缓存给用户：发现版本不一致就自动重载。
+  function checkVersion() {
+    let tries = 0;
+    try { tries = parseInt(sessionStorage.getItem("ms_ver_retry") || "0", 10) || 0; } catch (e) {}
+    if (tries >= 2) return; // 防止极端情况下反复重载
+    try { sessionStorage.setItem("ms_ver_retry", String(tries + 1)); } catch (e) {}
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d && d.v && d.v !== BUILD_VERSION) location.reload(true); })
+      .catch(() => {});
+  }
+
   /* ----------------------------- 启动 ----------------------------- */
   function init() {
+    checkVersion();
     App.content = $("#content"); App.navList = $("#navList"); App.crumbs = $("#crumbs");
     App.subtabs = $("#subtabs"); App.overlay = $("#overlay"); App.sheet = $("#sheet");
     renderNav(); renderSubtabs(); updateCrumbs();
