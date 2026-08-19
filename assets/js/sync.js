@@ -10,7 +10,6 @@
   "use strict";
 
   const LS_KEY = "mindspace.sync.v1";
-  const SB_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
   const TABLE = "mindspace_sync";
 
   let cfg = load();
@@ -25,12 +24,15 @@
     try { localStorage.setItem(LS_KEY, JSON.stringify(cfg)); } catch (e) {}
   }
 
-  async function ensureClient() {
+  function ensureClient() {
     if (client) return client;
     if (!cfg.url || !cfg.anonKey) return null;
+    const sb = global.supabase;
+    if (!sb || typeof sb.createClient !== "function") return null;
     if (!global.__sbClient) {
-      const mod = await import(/* @vite-ignore */ SB_CDN);
-      global.__sbClient = mod.createClient(cfg.url, cfg.anonKey);
+      global.__sbClient = sb.createClient(cfg.url, cfg.anonKey, {
+        auth: { persistSession: true, autoRefreshToken: true }
+      });
     }
     client = global.__sbClient;
     return client;
@@ -49,12 +51,12 @@
   function emit() { listeners.forEach((cb) => { try { cb(status()); } catch (e) {} }); }
   function on(cb) { listeners.push(cb); }
 
-  async function configure(url, anonKey) {
+  function configure(url, anonKey) {
     cfg.url = (url || "").trim();
     cfg.anonKey = (anonKey || "").trim();
     persist();
     client = null;
-    return !!(await ensureClient());
+    return !!ensureClient();
   }
   function clearConfig() {
     cfg.url = ""; cfg.anonKey = ""; cfg.user = null; cfg.auto = false; cfg.lastSync = null;
@@ -62,7 +64,7 @@
   }
 
   async function signUp(email, password) {
-    const c = await ensureClient();
+    const c = ensureClient();
     if (!c) throw new Error("尚未配置 Supabase");
     const { data, error } = await c.auth.signUp({ email, password });
     if (error) throw error;
@@ -71,7 +73,7 @@
     return data;
   }
   async function signIn(email, password) {
-    const c = await ensureClient();
+    const c = ensureClient();
     if (!c) throw new Error("尚未配置 Supabase");
     const { data, error } = await c.auth.signInWithPassword({ email, password });
     if (error) throw error;
@@ -80,14 +82,14 @@
     return data;
   }
   async function signOut() {
-    const c = await ensureClient();
+    const c = ensureClient();
     if (c) { try { await c.auth.signOut(); } catch (e) {} }
     cfg.user = null; persist(); emit();
   }
 
   // 拉取：返回 { payload, updatedAt } 或 null
   async function pull() {
-    const c = await ensureClient();
+    const c = ensureClient();
     if (!c || !cfg.user) throw new Error("未登录");
     const { data, error } = await c
       .from(TABLE)
@@ -99,7 +101,7 @@
   }
   // 推送：按 user_id 幂等 upsert
   async function push(payload) {
-    const c = await ensureClient();
+    const c = ensureClient();
     if (!c || !cfg.user) throw new Error("未登录");
     const { error } = await c
       .from(TABLE)

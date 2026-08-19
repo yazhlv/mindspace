@@ -19,8 +19,14 @@
 </head>
 <body>
   <div id="installBanner" class="install-banner" hidden>
-    <span>当前浏览器仅创建了网页快捷方式。用 Chrome/Edge 打开本页并点 ⋮ →「安装应用」，可获得全屏独立 App 体验。</span>
-    <button data-action="dismiss-install" aria-label="关闭">×</button>
+    <div>
+      <strong>当前浏览器不支持 PWA 安装</strong>
+      <span>请用 Chrome / Edge 打开本页，点 ⋮ →「安装应用」，才能获得全屏独立 App。</span>
+    </div>
+    <div class="install-actions">
+      <button class="btn sm light" data-action="copy-url" type="button">复制链接去 Chrome</button>
+      <button class="btn sm ghost light" data-action="dismiss-install" aria-label="关闭">×</button>
+    </div>
   </div>
   <div id="app" class="app">
     <!-- 左侧固定纵向导航栏 -->
@@ -64,6 +70,7 @@
   <!-- 轻提示 -->
   <div id="toast" class="toast" hidden></div>
 
+  <script src="assets/js/supabase.min.js"></script>
   <script src="assets/js/store.js"></script>
   <script src="assets/js/charts.js"></script>
   <script src="assets/js/market.js"></script>

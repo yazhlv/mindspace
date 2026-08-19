@@ -1,10 +1,11 @@
 /* MindSpace Service Worker — 离线优先缓存，支持添加到主屏 (PWA) */
-const CACHE = "mindspace-v2";
+const CACHE = "mindspace-v3";
 const ASSETS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./assets/css/style.css",
+  "./assets/js/supabase.min.js",
   "./assets/js/store.js",
   "./assets/js/charts.js",
   "./assets/js/market.js",

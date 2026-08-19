@@ -69,16 +69,20 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 /* PWA 安装提示横幅 */
 .install-banner {
   position: fixed; top: 0; left: 0; right: 0; z-index: 110;
-  background: var(--accent-deep); color: #fff; font-size: 13px;
+  background: #C47F4E; color: #fff; font-size: 13px;
   padding: 11px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
   box-shadow: var(--shadow-md); line-height: 1.45;
 }
+.install-banner strong { display: block; font-size: 14px; margin-bottom: 2px; }
+.install-banner .install-actions { display: flex; align-items: center; gap: 8px; flex: none; }
 .install-banner button {
   width: 28px; height: 28px; border-radius: 8px; flex: 0 0 28px;
-  display: grid; place-items: center; font-size: 18px; background: rgba(255,255,255,.18);
+  display: grid; place-items: center; font-size: 18px; background: rgba(255,255,255,.18); color: #fff;
 }
+.install-banner .btn.light { background: #fff; color: var(--accent-deep); border: none; width: auto; padding: 6px 12px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.install-banner .btn.ghost.light { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.35); width: 28px; padding: 0; }
 .install-banner[hidden] { display: none; }
-.install-banner:not([hidden]) + .app { margin-top: 54px; }
+.install-banner:not([hidden]) + .app { margin-top: 70px; }
 
 /* 触屏交互统一：防止双击缩放、点击后有清晰反馈 */
 .nav-item, .nav-sub-item, .subtab, .btn, .cal-cell, .photo, .watch-row, .index-card, .globe, .chip, .nav-foot-btn, .sync-btn, .menu-btn, .sheet-close, .cal-nav-btn, .mode-toggle button {
@@ -472,16 +476,23 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 /* ============================ 响应式 / 移动端 ============================ */
 @media (max-width: 880px) {
   .nav {
-    position: fixed; left: 0; top: 0; transform: translateX(-104%);
-    transition: transform .28s var(--ease), visibility .28s; box-shadow: var(--shadow-lg);
-    visibility: hidden; pointer-events: none;
+    position: fixed; left: 0; top: 0;
+    display: none; /* 彻底移除渲染树，防止系统浏览器拦截触屏 */
+    box-shadow: var(--shadow-lg);
   }
-  .nav.open { transform: translateX(0); visibility: visible; pointer-events: auto; }
+  .nav.open { display: flex; transform: translateX(0); }
   .menu-btn { display: grid; place-items: center; touch-action: manipulation; }
   .content { padding: 18px 16px 56px; }
   .input, .textarea, .select { font-size: 16px; }
-  .topbar { padding: 14px 16px; }
-  .subtabs { padding: 10px 16px 0; }
+  .topbar { padding: 14px 12px; gap: 8px; }
+  .topbar-actions { gap: 6px; }
+  .crumbs { min-width: 0; }
+  .crumbs .cr-main { font-size: 15px; }
+  .sync-btn { padding: 5px 9px; font-size: 12px; }
+  .live-badge { padding: 4px 8px; font-size: 11px; }
+  .subtabs { padding: 10px 12px 0; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .subtabs::-webkit-scrollbar { display: none; }
+  .subtab { flex: 0 0 auto; white-space: nowrap; padding: 7px 13px; font-size: 13px; }
   .grid-2, .grid-3, .grid-4, .kpi-row, .param-grid, .assume-grid { grid-template-columns: 1fr 1fr; }
   .cal-wrap { grid-template-columns: 1fr; }
   .fire-title { font-size: 22px; }

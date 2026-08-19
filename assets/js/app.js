@@ -328,6 +328,17 @@
         const b = $("#installBanner"); if (b) { b.hidden = true; try { localStorage.setItem("mindspace_banner_dismissed", "1"); } catch (e) {} }
         break;
       }
+      case "copy-url": {
+        const url = location.href;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(() => toast("链接已复制，请切换到 Chrome/Edge 粘贴打开"));
+          } else {
+            const ta = document.createElement("textarea"); ta.value = url; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); toast("链接已复制，请切换到 Chrome/Edge 粘贴打开");
+          }
+        } catch (e) { toast("复制失败，请手动复制地址栏链接到 Chrome/Edge 打开"); }
+        break;
+      }
       case "sync-push":
         (async () => {
           try { await Sync.push({ life: App.state.life, fire: App.state.fire }); Sync.touch(); openSyncSheet(); toast("已推送到云端"); }
@@ -741,9 +752,18 @@
            window.matchMedia("(display-mode: minimal-ui)").matches ||
            navigator.standalone === true;
   }
+  function isLikelyPwaInstallable() {
+    const ua = navigator.userAgent || "";
+    // Chrome / Edge / Samsung Internet 新版支持安装；国产系统浏览器一般不支持独立 PWA
+    const can = /Chrome|Edg|SamsungBrowser/.test(ua);
+    const cannot = /QQBrowser|LieBaoFast|UCBrowser|Quark|Baidu|Huawei|MiuiBrowser|Miui|OppoBrowser|VivoBrowser|HeyTapBrowser|WeChat|MicroMessenger/.test(ua);
+    return can && !cannot;
+  }
   function initInstallBanner() {
     if (isStandalone()) return;
     try { if (localStorage.getItem("mindspace_banner_dismissed") === "1") return; } catch (e) {}
+    // 在明显不支持 PWA 的系统浏览器里才显示强提示
+    if (isLikelyPwaInstallable()) return;
     const b = $("#installBanner"); if (b) b.hidden = false;
   }
 
