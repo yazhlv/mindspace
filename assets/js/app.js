@@ -840,7 +840,9 @@
       updateSyncBtn(Sync.status());
     }
     $("#menuBtn").addEventListener("click", toggleDrawer);
+    $("#menuBtn").addEventListener("touchend", (e) => { e.preventDefault(); toggleDrawer(); });
     $("#navScrim").addEventListener("click", closeDrawer);
+    $("#navScrim").addEventListener("touchend", (e) => { e.preventDefault(); closeDrawer(); });
     $("#overlay").addEventListener("click", (e) => { if (e.target === App.overlay) closeSheet(); });
     window.addEventListener("resize", () => drawAll(App.content));
     seedSeries();
