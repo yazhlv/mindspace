@@ -181,7 +181,7 @@
   }
 
   global.Store = {
-    KEY, uid, todayStr, defaultState, load, save, getPath, setPath, setOnSave,
+    KEY, uid, todayStr, defaultState, load, save, migrate, getPath, setPath, setOnSave,
     exportData, deepClone
   };
 })(window);

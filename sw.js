@@ -5,7 +5,7 @@
        导致“改了代码刷新后仍不生效”）
      · 其他静态资源（CSS / 图片）走 cache-first + 后台更新（离线友好，且很少变动）
    每次发版修改 CACHE 名称，旧缓存立即失效。 */
-const CACHE = "mindspace-v13";
+const CACHE = "mindspace-v14";
 const ASSETS = [
   "./",
   "./index.html",

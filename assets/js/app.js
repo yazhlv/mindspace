@@ -909,7 +909,7 @@
     initInstallBanner();
     // 云同步：本地保存后自动推送个人数据（life + fire）
     try {
-      if (global.Sync) {
+      if (window.Sync) {
         Store.setOnSave((state) => Sync.schedulePush(() => ({ life: state.life, fire: state.fire })));
         Sync.on(updateSyncBtn);
         updateSyncBtn(Sync.status());
